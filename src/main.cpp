@@ -8,6 +8,7 @@
 #include <sndfile.h>
 
 #include "wav_reader/reader.h"
+#include "doa_compute/sod.h"
 
 int main(int argc, char *argv[]){
 
@@ -21,6 +22,8 @@ int main(int argc, char *argv[]){
     // TODO variable Blocksize
     const uint16_t BUFFER_SIZE = (uint16_t) atoi(argv[1]);
     //const uint16_t BUFFER_SIZE = (uint16_t) 2048;
+
+    const int angles_x = 16;
 
 
     char* filePath = argv[2];
@@ -61,9 +64,13 @@ int main(int argc, char *argv[]){
     }
 
 
+    SOD sod (samplerate, BUFFER_SIZE, angles_x);
+
+
     while(next_buffers_full)
     {
-        std::cout << buffers[0][0]  << " " << buffers[1][0]<< std::endl;
+        //std::cout << buffers[0][0]  << " " << buffers[1][0]<< std::endl;
+        sod.compute(&buffers);
 
 
 
@@ -77,6 +84,7 @@ int main(int argc, char *argv[]){
             }
         }
     }
+
 
 
     //delete [] buffers;
