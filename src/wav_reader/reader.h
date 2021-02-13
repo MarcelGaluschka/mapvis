@@ -34,12 +34,15 @@ typedef struct  WAV_HEADER
 class Reader
 {
     public:
+    Reader(){};
     Reader(const char* filePath, uint16_t BUFFEER_SIZE);
     ~Reader(){fclose(wav_file);}
 
+    void openFile(const char* filePath, uint16_t BUFFEER_SIZE);
     int getFileSize(FILE* inFile);
 
     bool getNextBuffer(int16_t* *buffer);
+    uint32_t getSamplerate(){return wav_header.SamplesPerSec;}
 
 
 

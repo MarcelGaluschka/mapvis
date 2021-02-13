@@ -1,5 +1,9 @@
 #include <iostream>
 #include <vector>
+#include <array>
+
+
+#include <boost/lexical_cast.hpp>
 
 #include <sndfile.h>
 
@@ -14,25 +18,71 @@ int main(int argc, char *argv[]){
         return 0.0;
     }
 
-    uint16_t BUFFER_SIZE = (uint16_t) atoi(argv[1]);
-    const char* filePath = argv[2];
-    std::cout << BUFFER_SIZE << "\t" << filePath << std::endl;
-    // print arguments
+    // TODO variable Blocksize
+    const uint16_t BUFFER_SIZE = (uint16_t) atoi(argv[1]);
+    //const uint16_t BUFFER_SIZE = (uint16_t) 2048;
 
 
-    Reader reader(filePath, BUFFER_SIZE);
+    char* filePath = argv[2];
+    string filePathString = filePath;
+    filePathString.erase(filePathString.size()-5);
 
+    const int num_mics = 8;
 
-    int16_t* buffer = new int16_t[BUFFER_SIZE];
-    while(reader.getNextBuffer(&buffer))
+    std::array<char*, num_mics> filePaths;
+    for (int i = 0; i < filePaths.size(); i++)
     {
-        for (unsigned int i = 0; i < BUFFER_SIZE; i++)
+        filePaths[i] = strdup((filePathString + boost::lexical_cast<string>(i+1) + ".wav").c_str());
+    }
+
+
+    std::array<Reader, num_mics> readers; 
+    for (int i = 0; i < num_mics; i++)
+    {
+        readers[i].openFile(filePaths[i], BUFFER_SIZE);
+    }
+
+
+    std::array<int16_t* ,num_mics> buffers;
+    for (int i = 0; i < num_mics; i++)
+    {
+        buffers[i] = new int16_t[BUFFER_SIZE];
+    }
+
+    uint32_t samplerate = readers[0].getSamplerate();
+
+    bool next_buffers_full = true;
+    for (int n = 0; n < num_mics; n++)
+    {
+        if(!readers[n].getNextBuffer(&buffers[n]))
         {
+            next_buffers_full = false;
         }
     }
 
-    delete [] buffer;
-    buffer = nullptr;
+
+    while(next_buffers_full)
+    {
+        std::cout << buffers[0][0]  << " " << buffers[1][0]<< std::endl;
+
+
+
+
+        // get new buffers for next iteration
+        for (int n = 0; n < num_mics; n++)
+        {
+            if(!readers[n].getNextBuffer(&buffers[n]))
+            {
+                next_buffers_full = false;
+            }
+        }
+    }
+
+
+    //delete [] buffers;
+    //buffers = nullptr;
+
+
 
     return 0.0;
 }
