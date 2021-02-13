@@ -73,6 +73,21 @@ void SOD::compute(std::array<int16_t*,8> *buffers)
         }
     }
     // TODO fft shift on h
+
+    const int c_k = k;
+    std::array<double, 512> l_array;
+
+    for(int curr_k = 0; curr_k < k; k++)
+    {
+        // reuse l_array for each k
+        for(int i = 0; i < windowsize; i++)
+        {
+            l_array[i] = (int)(curr_k * (windowsize/2.0) + i);
+        }
+
+    }
+
+
 }
 
 double SOD::hamming(double windowsize, int pos)
