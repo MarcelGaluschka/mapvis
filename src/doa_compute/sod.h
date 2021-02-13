@@ -17,11 +17,12 @@ class SOD
 
 
         std::array<std::complex<double>,8> mics;
-
+        const int num_mics = 8;
         double samplerate;
         int k;
 
         int angles_x;
+        std::vector<double> act_angles_x;
 
         const double windowsize = 512;
         std::array<double, 512> hamming_array;
