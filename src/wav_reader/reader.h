@@ -34,14 +34,13 @@ typedef struct  WAV_HEADER
 class Reader
 {
     public:
-    Reader(const char* filePath);
+    Reader(const char* filePath, uint16_t BUFFEER_SIZE);
     ~Reader(){fclose(wav_file);}
 
     int getFileSize(FILE* inFile);
 
     bool getNextBuffer(int16_t* *buffer);
 
-    int readFile(const char* filePath);
 
 
     protected:
@@ -52,8 +51,7 @@ class Reader
     private: 
         uint16_t bytes_per_sample;
         uint64_t num_samples;
-        uint16_t BUFFER_SIZE;
-        //int16_t* buffer;
+        uint16_t BUFFER_SIZE = 0;
         uint64_t curr_sample = 0;
 
 

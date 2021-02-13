@@ -1,4 +1,5 @@
 #include <iostream>
+#include <vector>
 
 #include <sndfile.h>
 
@@ -6,45 +7,32 @@
 
 int main(int argc, char *argv[]){
 
-
-
-    if(argc == 1)
+    // read arguments
+    if(argc < 2)
     {
         std::cout << "No parameter given" << std::endl;
         return 0.0;
     }
-    std::cout << argv[1] << std::endl;
 
-    Reader reader(argv[1]);
+    uint16_t BUFFER_SIZE = (uint16_t) atoi(argv[1]);
+    const char* filePath = argv[2];
+    std::cout << BUFFER_SIZE << "\t" << filePath << std::endl;
+    // print arguments
 
-    int16_t minval = 0;
-    int16_t maxval = 0;
+
+    Reader reader(filePath, BUFFER_SIZE);
 
 
-    int16_t* buffer = new int16_t[16];
+    int16_t* buffer = new int16_t[BUFFER_SIZE];
     while(reader.getNextBuffer(&buffer))
     {
-        for (unsigned int i = 0; i < 16; i++)
+        for (unsigned int i = 0; i < BUFFER_SIZE; i++)
         {
-            if(buffer[i] < minval)
-            {
-                minval = buffer[i];
-            }
-            if(buffer[i]  > maxval)
-            {
-                maxval = buffer[i];
-            }
         }
     }
-    std::cout << maxval << std::endl;
-    std::cout << minval << std::endl;
 
     delete [] buffer;
     buffer = nullptr;
-
-
-
-    //readFile(argv[1]);
 
     return 0.0;
 }
