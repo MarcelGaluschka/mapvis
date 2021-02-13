@@ -27,7 +27,6 @@ void Reader::openFile(const char* filePath, uint16_t BUFFER_SIZE)
     int fileLength = 0;
 
     wav_file = fopen(filePath, "r");
-    cout << wav_file << endl;
     if(wav_file == nullptr)
     {
         fprintf(stderr, "Unable to open wave file: %s\n", filePath);
