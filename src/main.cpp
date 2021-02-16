@@ -9,6 +9,7 @@
 
 #include "wav_reader/reader.h"
 #include "doa_compute/sod.h"
+#include "output_writer/csv_writer.h"
 
 int main(int argc, char *argv[]){
 
@@ -68,12 +69,18 @@ int main(int argc, char *argv[]){
 
     int counter = 0;
 
+
+    std::array<double,2> resultbuffer;
+    std::vector<double> results_angl;
+    std::vector<double> results_dbs;
+
     while(next_buffers_full)
     {
         //std::cout << buffers[0][0]  << " " << buffers[1][0]<< std::endl;
-        sod.compute(&buffers);
+        resultbuffer = sod.compute(&buffers);
 
-
+        results_angl.push_back(resultbuffer[0]);
+        results_dbs.push_back(resultbuffer[1]);
 
         counter++;
         std::cout << counter << std::endl;
@@ -81,8 +88,6 @@ int main(int argc, char *argv[]){
         //{
         //    return 0.0;
         //}
-
-
 
         // get new buffers for next iteration
         for (int n = 0; n < num_mics; n++)
@@ -93,6 +98,9 @@ int main(int argc, char *argv[]){
             }
         }
     }
+
+    write_csv("", results_angl, results_dbs);
+
 
 
 
