@@ -66,12 +66,21 @@ int main(int argc, char *argv[]){
 
     SOD sod (samplerate, BUFFER_SIZE, angles_x);
 
+    int counter = 0;
 
     while(next_buffers_full)
     {
         //std::cout << buffers[0][0]  << " " << buffers[1][0]<< std::endl;
         sod.compute(&buffers);
 
+
+
+        counter++;
+        std::cout << counter << std::endl;
+        //if (counter >= 10)
+        //{
+        //    return 0.0;
+        //}
 
 
 
