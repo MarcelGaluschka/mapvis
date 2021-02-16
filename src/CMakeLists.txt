@@ -4,6 +4,7 @@ add_executable(${PROJECT_NAME}
     main.cpp
     wav_reader/reader.cpp
     doa_compute/sod.cpp
+    output_writer/csv_writer.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR})
