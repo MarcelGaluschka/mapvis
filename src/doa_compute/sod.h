@@ -9,7 +9,7 @@ class SOD
 {
     public: 
         SOD(int samplerate, uint16_t BUFFER_SIZE, int angles_x);
-        void compute(std::array<int16_t*,8> *buffers);
+        std::array<double,2> compute(std::array<int16_t*,8> *buffers);
 
 
     private:
@@ -44,14 +44,20 @@ class SOD
 
         std::array<double,2> incoming_ray;
 
-        std::array<std::array<std::complex<double>,2>,8> inc_matrix;
-        std::array<std::array<std::complex<double>,2>,8> inc_matrix2;
+        std::array<double,8> inc_matrix;
+        std::array<double,8> inc_matrix2;
 
-        std::array<std::array<std::array<std::complex<double>,2>,512>,8> H;
+        std::array<std::array<std::complex<double>,512>,8> H;
         std::vector<double> Th;
 
 
         std::vector<double> temp_steering_block;
         std::vector<std::vector<double>> steering_block;
+
+        double current_sum;
+        double current_max_angl; 
+        double current_max_dbs;
+        double current_current_max_dbs;
+        int result_angl_id;
 };
 

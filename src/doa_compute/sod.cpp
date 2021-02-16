@@ -32,9 +32,11 @@ SOD::SOD(int samplerate, uint16_t BUFFER_SIZE, int angles_x)
     y.resize(num_mics, temp_y);
 
     temp_steering_block.resize(BUFFER_SIZE, 0.0);
+
+    current_sum = 0.0;
 }
 
-void SOD::compute(std::array<int16_t*,8> *buffers)
+std::array<double,2> SOD::compute(std::array<int16_t*,8> *buffers)
 {
     std::complex<double> imaginary(0.0,1.0);
     // reset steering block
@@ -48,11 +50,9 @@ void SOD::compute(std::array<int16_t*,8> *buffers)
 
         for (int i = 0; i < num_mics; i++)
         {
-            for (int j = 0; j < incoming_ray.size(); j++)
-            {
-                inc_matrix[i][j] = (mics[i] * incoming_ray[j]) / airspeed;
-                inc_matrix2[i][j] = inc_matrix[i][j] * samplerate;
-            }
+            inc_matrix[i] = (real(mics[i]) * incoming_ray[0]) / airspeed;
+            inc_matrix[i] += (imag(mics[i]) * incoming_ray[1]) / airspeed;
+            inc_matrix2[i] = inc_matrix[i] * samplerate;
         }
 
         for (int k = 0; k < (int) windowsize; k++)
@@ -65,17 +65,14 @@ void SOD::compute(std::array<int16_t*,8> *buffers)
         {
             for (int k = 0; k < 1; k++)
             {
-                H[0][j][k] = std::complex<double> (1,0);
+                H[0][j] = std::complex<double> (1,0);
             }
         }
         for (int i = 1; i < num_mics; i++)
         {
             for (int j = 0; j < (int) windowsize; j++)
             {
-                for (int k = 0; k < 1; k++)
-                {
-                    H[i][j][k] = exp(- imaginary * Th.at(j) * inc_matrix2[i][k]);
-                }
+                H[i][j] = exp(- imaginary * Th.at(j) * inc_matrix2[i]);
             }
         }
         // TODO: fft shift on h
@@ -98,16 +95,12 @@ void SOD::compute(std::array<int16_t*,8> *buffers)
                     xa.at(m).at(j) = buffers->at(m)[(int) l_array[j]];
                 }
             }
-            // matrix multiplication FIXME: element wise multiply
+            // elementwise mult
             for (int matrix_i = 0; matrix_i < num_mics; matrix_i++)
             {
                 for(int matrix_j = 0; matrix_j < windowsize; matrix_j++)
                 {
-                    Xa_temp.at(matrix_i).at(matrix_j) = 0.0;
-                    for(int c = 0; c < windowsize; c++)
-                    {
-                        Xa_temp.at(matrix_i).at(matrix_j) += xa.at(matrix_i).at(c) * hamming_array[matrix_i];
-                    }
+                    Xa_temp.at(matrix_i).at(matrix_j) = xa.at(matrix_i).at(matrix_j) = hamming_array[matrix_i];
                 }
             }
 
@@ -133,7 +126,7 @@ void SOD::compute(std::array<int16_t*,8> *buffers)
             {
                 for (int j = 0; j < windowsize; j++)
                 {
-                    Ya.at(i).at(j) = Xa.at(i).at(j) * H[i][j][0];
+                    Ya.at(i).at(j) = Xa.at(i).at(j) * H[i][j];
                 }
             }
 
@@ -159,13 +152,34 @@ void SOD::compute(std::array<int16_t*,8> *buffers)
                     y.at(i).at((int) l_array.at(j)) +=  real(ya.at(i).at(j));
                 }
             }
+        } // end for k
 
-
-
-
+        for (int buff_counter = 0; buff_counter < BUFFER_SIZE; buff_counter++)
+        {
+            current_sum = 0.0;
+            for (int curr_channel = 0; curr_channel < num_mics; curr_channel++)
+            {
+                current_sum += y.at(curr_channel).at(buff_counter);
+            }
+            steering_block.at(curr_angl_id).at(buff_counter) = pow(current_sum, 2);
         }
+    } // end for each angle
 
+    current_max_angl = 0.0;
+    current_max_dbs = 0.0;
+    for (int i = 0; i < angles_x; i++)
+    {
+        for (int b = 0; b < BUFFER_SIZE; b++)
+        {
+            if(20 * log10(steering_block.at(i).at(b) + (float) 1e-16) > current_max_dbs)
+            {
+                current_max_dbs = 20 * log10(steering_block.at(i).at(b) + (float) 1e-16);
+                current_max_angl = (act_angles_x.at(i)/180) * M_PI;
+            }
+        }
     }
+    return std::array<double,2> {current_max_angl, current_max_dbs};
+
 }
 
 double SOD::hamming(double windowsize, int pos)
