@@ -9,6 +9,8 @@
 
 #include <sndfile.h>
 
+#include "Iir.h"
+
 #include "wav_reader/reader.h"
 #include "doa_compute/sod.h"
 #include "output_writer/csv_writer.h"
@@ -26,8 +28,7 @@ int main(int argc, char *argv[]){
     const uint16_t BUFFER_SIZE = (uint16_t) atoi(argv[1]);
     //const uint16_t BUFFER_SIZE = (uint16_t) 2048;
 
-    const int angles_x = 50;
-
+    const int angles_x = 16;
 
     char* filePath = argv[2];
     string filePathString = filePath;
@@ -66,8 +67,24 @@ int main(int argc, char *argv[]){
         }
     }
 
-
+    // new object of Direction finder
     SOD sod (samplerate, BUFFER_SIZE, angles_x);
+    
+
+    //new object of filter 8th order between 600 adn 6000 Hz
+    const double filter_coeff[][6] = {
+        {0.05445625, 0.10743313, 0.05445625,  1.0, -0.0950718, 0.4306414},
+        {1.0, -1.99776801, 1.0, 1.0, -1.35646634, 0.63553658},
+        {      1.        ,  1.8187884 ,  1.        ,  1.,          0.85170717,  0.72936388},
+        {      1.        , -1.98456217,  1.        ,  1.,         -1.78771671,  0.88981689},
+        {      1.        ,  1.67840562,  1.        ,  1.,          1.24844883,  0.89660922},
+        {      1.        , -1.97164923,  1.        ,  1.,         -1.89872608,  0.96371827},
+        {      1.        ,  1.61189906,  1.        ,  1.,          1.39397587,  0.97318931},
+        {      1.        , -1.9652127 ,  1.        ,  1.,         -1.93591133,  0.99106541}
+    };
+    const int nSOS = sizeof(filter_coeff) / sizeof(filter_coeff[0]);
+    Iir::Custom::SOSCascade<nSOS> customFilter (filter_coeff);
+    
 
     int counter = 0;
 
@@ -79,7 +96,16 @@ int main(int argc, char *argv[]){
 
     while(next_buffers_full)
     {
-        //std::cout << buffers[0][0]  << " " << buffers[1][0]<< std::endl;
+        for (int mic = 0; mic < num_mics; mic++)
+        {
+            for(int i = 0; i < BUFFER_SIZE; i++)
+            {
+                buffers[mic][i] = customFilter.filter(buffers[mic][i]);
+            }
+        }
+
+
+
         resultbuffer = sod.compute(&buffers);
 
         results_angl.push_back(resultbuffer[0]);
@@ -108,13 +134,6 @@ int main(int argc, char *argv[]){
     std::cout << "Time needed for computation: " <<  timing.count() << " seconds"<< std::endl;
 
     write_csv("", results_angl, results_dbs);
-
-
-
-
-    //delete [] buffers;
-    //buffers = nullptr;
-
 
 
     return 0.0;
