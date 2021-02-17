@@ -4,17 +4,22 @@
 #include <array>
 #include <complex>
 #include <math.h>
+#include <algorithm>
 
+/*
+* Sum of delay algorithms in tbe 2D - case
+*/ 
 class SOD
 {
     public: 
         SOD(int samplerate, uint16_t BUFFER_SIZE, int angles_x);
         std::array<double,2> compute(std::array<int16_t*,8> *buffers);
 
-
     private:
         double hamming(double windowsize, int pos);
 
+        void fft(std::vector<std::complex<double>> &x);
+        void ifft(std::vector<std::complex<double>> &x);
 
         std::array<std::complex<double>,8> mics;
         const int num_mics = 8;
@@ -30,9 +35,6 @@ class SOD
         uint16_t BUFFER_SIZE;
 
         std::vector<std::vector<double>> xa;
-        std::vector<std::vector<double>> Xa_temp;
-        std::vector<std::vector<double>> Xa;
-        std::vector<std::vector<std::complex<double>>> Ya;
         std::vector<std::vector<std::complex<double>>> ya;
         std::vector<std::vector<double>> y;
 

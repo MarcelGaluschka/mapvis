@@ -14,6 +14,7 @@ SOD::SOD(int samplerate, uint16_t BUFFER_SIZE, int angles_x)
     {
         hamming_array[i] = hamming(windowsize, i);
     }
+    this->angles_x = angles_x;
     for (int i = 0; i < angles_x; i++)
     {
         act_angles_x.push_back( i * (360.0/(double)angles_x));
@@ -25,9 +26,6 @@ SOD::SOD(int samplerate, uint16_t BUFFER_SIZE, int angles_x)
     temp_y.resize(BUFFER_SIZE, 0.0);
 
     xa.resize(num_mics, temp_xa);
-    Xa_temp.resize(num_mics, temp_xa);
-    Xa.resize(num_mics, temp_xa);
-    Ya.resize(num_mics, temp_xa_comp);
     ya.resize(num_mics, temp_xa_comp);
     y.resize(num_mics, temp_y);
 
@@ -63,10 +61,7 @@ std::array<double,2> SOD::compute(std::array<int16_t*,8> *buffers)
 
         for (int j = 0; j < (int) windowsize; j++)
         {
-            for (int k = 0; k < 1; k++)
-            {
-                H[0][j] = std::complex<double> (1,0);
-            }
+            H[0][j] = std::complex<double> (1,0);
         }
         for (int i = 1; i < num_mics; i++)
         {
@@ -75,9 +70,11 @@ std::array<double,2> SOD::compute(std::array<int16_t*,8> *buffers)
                 H[i][j] = exp(- imaginary * Th.at(j) * inc_matrix2[i]);
             }
         }
-        // TODO: fft shift on h
-
-        const int c_k = k;
+        // TODO: fft shift on h is this correct???
+        for (int i = 0; i < num_mics; i++)
+        {
+            std::rotate(H[i].begin(), (H[i].begin() + ((int)windowsize >> 1)), H[i].end());
+        }
 
 
         for(int curr_k = 0; curr_k < k; curr_k++)
@@ -100,7 +97,7 @@ std::array<double,2> SOD::compute(std::array<int16_t*,8> *buffers)
             {
                 for(int matrix_j = 0; matrix_j < windowsize; matrix_j++)
                 {
-                    Xa_temp.at(matrix_i).at(matrix_j) = xa.at(matrix_i).at(matrix_j) = hamming_array[matrix_i];
+                    ya.at(matrix_i).at(matrix_j) = (std::complex<double>)  xa.at(matrix_i).at(matrix_j) * hamming_array[matrix_i];
                 }
             }
 
@@ -108,35 +105,21 @@ std::array<double,2> SOD::compute(std::array<int16_t*,8> *buffers)
             // FIXME: fft  instead of copy
             for (int i = 0; i < num_mics; i++)
             {
-                for (int j = 0; j < windowsize; j++)
-                {
-                    Xa.at(i).at(j) = Xa_temp.at(i).at(j);
-                }
+                fft(ya.at(i));
             }
 
             for (int i = 0; i < num_mics; i++)
             {
                 for (int j = 0; j < windowsize; j++)
                 {
-                    Xa.at(i).at(j) = Xa_temp.at(i).at(j);
-                }
-            }
-
-            for (int i = 0; i < num_mics; i++)
-            {
-                for (int j = 0; j < windowsize; j++)
-                {
-                    Ya.at(i).at(j) = Xa.at(i).at(j) * H[i][j];
+                    ya.at(i).at(j) *= H[i][j];
                 }
             }
 
             // FIXME: inverse fft 
             for (int i = 0; i < num_mics; i++)
             {
-                for (int j = 0; j < windowsize; j++)
-                {
-                    ya.at(i).at(j) = Ya.at(i).at(j);
-                }
+                ifft(ya.at(i));
             }
             for (int i = 0; i < num_mics; i++)
             {
@@ -174,7 +157,7 @@ std::array<double,2> SOD::compute(std::array<int16_t*,8> *buffers)
             if(20 * log10(steering_block.at(i).at(b) + (float) 1e-16) > current_max_dbs)
             {
                 current_max_dbs = 20 * log10(steering_block.at(i).at(b) + (float) 1e-16);
-                current_max_angl = (act_angles_x.at(i)/180) * M_PI;
+                current_max_angl = act_angles_x.at(i);
             }
         }
     }
@@ -185,4 +168,80 @@ std::array<double,2> SOD::compute(std::array<int16_t*,8> *buffers)
 double SOD::hamming(double windowsize, int pos)
 {
     return 0.54 - 0.46 * cos((2 * M_PI * pos)/(windowsize - 1));
+}
+
+void SOD::fft(std::vector<std::complex<double>> &x)
+{
+
+     // DFT
+    unsigned int N = x.size();
+    unsigned int k = N;
+    unsigned int n;
+    double thetaT = 3.14159265358979323846264338328L / N;
+    std::complex<double> phiT = std::complex<double> (cos(thetaT), -sin(thetaT));
+    std::complex<double> T;
+    while (k > 1)
+    {
+        n = k;
+        k >>= 1;
+        phiT = phiT * phiT;
+        T = 1.0L;
+        for (unsigned int l = 0; l < k; l++)
+        {
+            for (unsigned int a = l; a < N; a += n)
+            {
+                unsigned int b = a + k;
+                std::complex<double> t = x.at(a) - x.at(b);
+                x.at(a) += x.at(b);
+                x.at(b) = t * T;
+            }
+            T *= phiT;
+        }
+    }
+    // Decimate
+    unsigned int m = (unsigned int)log2(N);
+    for (unsigned int a = 0; a < N; a++)
+    {
+        unsigned int b = a;
+        // Reverse bits
+        b = (((b & 0xaaaaaaaa) >> 1) | ((b & 0x55555555) << 1));
+        b = (((b & 0xcccccccc) >> 2) | ((b & 0x33333333) << 2));
+        b = (((b & 0xf0f0f0f0) >> 4) | ((b & 0x0f0f0f0f) << 4));
+        b = (((b & 0xff00ff00) >> 8) | ((b & 0x00ff00ff) << 8));
+        b = ((b >> 16) | (b << 16)) >> (32 - m);
+        if (b > a)
+        {
+            std::complex<double> t = x.at(a);
+            x.at(a) = x.at(b);
+            x.at(b) = t;
+        }
+    }
+
+    //for (int i = 0; i < x.size(); i++)
+    //{
+    //    x.at(i) /= x.size();
+    //}
+
+    return;
+}
+
+void SOD::ifft(std::vector<std::complex<double>> &x)
+{
+    for (int i = 0; i < x.size(); i++)
+    {
+        x.at(i) = std::conj(x.at(i));
+    }
+
+    fft(x);
+
+    for (int i = 0; i < x.size(); i++)
+    {
+        x.at(i) = std::conj(x.at(i));
+    }
+
+    for (int i = 0; i < x.size(); i++)
+    {
+        x.at(i) /= x.size();
+    }
+
 }

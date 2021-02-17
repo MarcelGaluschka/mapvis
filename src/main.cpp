@@ -24,7 +24,7 @@ int main(int argc, char *argv[]){
     const uint16_t BUFFER_SIZE = (uint16_t) atoi(argv[1]);
     //const uint16_t BUFFER_SIZE = (uint16_t) 2048;
 
-    const int angles_x = 16;
+    const int angles_x = 50;
 
 
     char* filePath = argv[2];
@@ -83,11 +83,14 @@ int main(int argc, char *argv[]){
         results_dbs.push_back(resultbuffer[1]);
 
         counter++;
-        std::cout << counter << std::endl;
-        //if (counter >= 10)
-        //{
-        //    return 0.0;
-        //}
+        if(counter % 10 == 0)
+        {
+            std::cout << counter << std::endl;
+            if(counter == 1000)
+            {
+                break;
+            }
+        }
 
         // get new buffers for next iteration
         for (int n = 0; n < num_mics; n++)
