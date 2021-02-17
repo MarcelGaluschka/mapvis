@@ -2,6 +2,8 @@
 #include <vector>
 #include <array>
 
+#include <chrono>
+
 
 #include <boost/lexical_cast.hpp>
 
@@ -69,6 +71,7 @@ int main(int argc, char *argv[]){
 
     int counter = 0;
 
+    auto startTime = std::chrono::high_resolution_clock::now();
 
     std::array<double,2> resultbuffer;
     std::vector<double> results_angl;
@@ -85,11 +88,8 @@ int main(int argc, char *argv[]){
         counter++;
         if(counter % 10 == 0)
         {
+            // print something every tenth block to estimate runtime
             std::cout << counter << std::endl;
-            if(counter == 1000)
-            {
-                break;
-            }
         }
 
         // get new buffers for next iteration
@@ -101,6 +101,11 @@ int main(int argc, char *argv[]){
             }
         }
     }
+
+    auto endTime = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> timing;
+    timing = endTime - startTime;
+    std::cout << "Time needed for computation: " <<  timing.count() << " seconds"<< std::endl;
 
     write_csv("", results_angl, results_dbs);
 
