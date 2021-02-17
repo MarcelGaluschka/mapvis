@@ -72,7 +72,7 @@ int main(int argc, char *argv[]){
     
 
     //new object of filter 8th order between 600 adn 6000 Hz
-    const double filter_coeff[][6] = {
+    const double broadband_filter[][6] = {
         {0.05445625, 0.10743313, 0.05445625,  1.0, -0.0950718, 0.4306414},
         {1.0, -1.99776801, 1.0, 1.0, -1.35646634, 0.63553658},
         {      1.        ,  1.8187884 ,  1.        ,  1.,          0.85170717,  0.72936388},
@@ -82,8 +82,8 @@ int main(int argc, char *argv[]){
         {      1.        ,  1.61189906,  1.        ,  1.,          1.39397587,  0.97318931},
         {      1.        , -1.9652127 ,  1.        ,  1.,         -1.93591133,  0.99106541}
     };
-    const int nSOS = sizeof(filter_coeff) / sizeof(filter_coeff[0]);
-    Iir::Custom::SOSCascade<nSOS> customFilter (filter_coeff);
+    const int nSOS = sizeof(broadband_filter) / sizeof(broadband_filter[0]);
+    Iir::Custom::SOSCascade<nSOS> customFilter (broadband_filter);
     
 
     int counter = 0;
