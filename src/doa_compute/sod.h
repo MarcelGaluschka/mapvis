@@ -21,8 +21,8 @@ class SOD
         void fft(std::vector<std::complex<double>> &x);
         void ifft(std::vector<std::complex<double>> &x);
 
-        std::array<std::complex<double>,8> mics;
-        const int num_mics = 8;
+        std::vector<std::complex<double>> mics;
+        int num_mics = 8;
         double samplerate;
         int k;
 
@@ -30,7 +30,7 @@ class SOD
         std::vector<double> act_angles_x;
 
         const double windowsize = 512;
-        std::array<double, 512> hamming_array;
+        std::vector<double> hamming_array;
         const double airspeed = 343;
         uint16_t BUFFER_SIZE;
 
@@ -42,14 +42,15 @@ class SOD
         std::vector<std::complex<double>> temp_xa_comp;
         std::vector<double> temp_y;
 
-        std::array<double, 512> l_array;
+        std::vector<double> l_array;
 
         std::array<double,2> incoming_ray;
 
-        std::array<double,8> inc_matrix;
-        std::array<double,8> inc_matrix2;
+        std::vector<double> inc_matrix;
+        std::vector<double> inc_matrix2;
 
-        std::array<std::array<std::complex<double>,512>,8> H;
+        //std::array<std::array<std::complex<double>,512>,8> H;
+        std::vector<std::vector<std::complex<double>>> H;
         std::vector<double> Th;
 
 

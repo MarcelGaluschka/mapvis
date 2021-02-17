@@ -3,22 +3,33 @@
 SOD::SOD(int samplerate, uint16_t BUFFER_SIZE, int angles_x)
 {
     this->BUFFER_SIZE = BUFFER_SIZE;
+    this->num_mics = 8;
+
     std::complex<double> imaginary(0.0,1.0);
+    mics.resize(num_mics, std::complex<double>());
     for (int i = 0; i < mics.size(); i++)
     {
-        mics[i] = 10.0 * exp((imaginary * (double)i / 8.0) * 2.0 * M_PI) / 100.0;
+        mics[i] = 10.0 * exp((imaginary * (double) i / (double) num_mics) * 2.0 * M_PI) / 100.0;
     }
+
     this->samplerate = (double) samplerate;
     this->k = (int) (BUFFER_SIZE - windowsize) / (windowsize/2.0);
+    hamming_array.resize(windowsize, 0.0);
     for (int i = 0; i < hamming_array.size(); i++)
     {
-        hamming_array[i] = hamming(windowsize, i);
+        hamming_array.at(i) = hamming(windowsize, i);
     }
+
+    l_array.resize(windowsize, 0.0);
+    inc_matrix.resize(num_mics, 0.0);
+    inc_matrix2.resize(num_mics, 0.0);
+
     this->angles_x = angles_x;
     for (int i = 0; i < angles_x; i++)
     {
         act_angles_x.push_back( i * (360.0/(double)angles_x));
     }
+
 
     temp_xa.resize(windowsize, 0.0);
     temp_xa_comp.resize(windowsize, std::complex<double> (0.0,0.0));
@@ -28,6 +39,11 @@ SOD::SOD(int samplerate, uint16_t BUFFER_SIZE, int angles_x)
     xa.resize(num_mics, temp_xa);
     ya.resize(num_mics, temp_xa_comp);
     y.resize(num_mics, temp_y);
+
+    std::vector<std::complex<double>> H_x;
+    H_x.resize((int) windowsize, std::complex<double>());
+
+    H.resize(num_mics, H_x);
 
     temp_steering_block.resize(BUFFER_SIZE, 0.0);
 
@@ -48,9 +64,9 @@ std::array<double,2> SOD::compute(std::array<int16_t*,8> *buffers)
 
         for (int i = 0; i < num_mics; i++)
         {
-            inc_matrix[i] = (real(mics[i]) * incoming_ray[0]) / airspeed;
-            inc_matrix[i] += (imag(mics[i]) * incoming_ray[1]) / airspeed;
-            inc_matrix2[i] = inc_matrix[i] * samplerate;
+            inc_matrix.at(i) = (real(mics.at(i)) * incoming_ray[0]) / airspeed;
+            inc_matrix.at(i) += (imag(mics.at(i)) * incoming_ray[1]) / airspeed;
+            inc_matrix2.at(i) = inc_matrix.at(i) * samplerate;
         }
 
         for (int k = 0; k < (int) windowsize; k++)
@@ -61,19 +77,19 @@ std::array<double,2> SOD::compute(std::array<int16_t*,8> *buffers)
 
         for (int j = 0; j < (int) windowsize; j++)
         {
-            H[0][j] = std::complex<double> (1,0);
+            H.at(0).at(j) = std::complex<double> (1,0);
         }
         for (int i = 1; i < num_mics; i++)
         {
             for (int j = 0; j < (int) windowsize; j++)
             {
-                H[i][j] = exp(- imaginary * Th.at(j) * inc_matrix2[i]);
+                H.at(i).at(j) = exp(- imaginary * Th.at(j) * inc_matrix2.at(i));
             }
         }
         // TODO: fft shift on h is this correct???
         for (int i = 0; i < num_mics; i++)
         {
-            std::rotate(H[i].begin(), (H[i].begin() + ((int)windowsize >> 1)), H[i].end());
+            std::rotate(H.at(i).begin(), (H.at(i).begin() + ((int)windowsize >> 1)), H.at(i).end());
         }
 
 
@@ -82,14 +98,14 @@ std::array<double,2> SOD::compute(std::array<int16_t*,8> *buffers)
             // reuse l_array for each k
             for(int i = 0; i < windowsize; i++)
             {
-                l_array[i] = (int)(curr_k * (windowsize/2.0) + i);
+                l_array.at(i) = (int)(curr_k * (windowsize/2.0) + i);
             }
 
             for(int m = 0; m < num_mics; m++)
             {
                 for(int j = 0; j < windowsize; j++)
                 {
-                    xa.at(m).at(j) = buffers->at(m)[(int) l_array[j]];
+                    xa.at(m).at(j) = buffers->at(m)[(int) l_array.at(j)];
                 }
             }
             // elementwise mult
@@ -97,12 +113,11 @@ std::array<double,2> SOD::compute(std::array<int16_t*,8> *buffers)
             {
                 for(int matrix_j = 0; matrix_j < windowsize; matrix_j++)
                 {
-                    ya.at(matrix_i).at(matrix_j) = (std::complex<double>)  xa.at(matrix_i).at(matrix_j) * hamming_array[matrix_i];
+                    ya.at(matrix_i).at(matrix_j) = (std::complex<double>)  xa.at(matrix_i).at(matrix_j) * hamming_array.at(matrix_i);
                 }
             }
 
 
-            // FIXME: fft  instead of copy
             for (int i = 0; i < num_mics; i++)
             {
                 fft(ya.at(i));
@@ -112,11 +127,10 @@ std::array<double,2> SOD::compute(std::array<int16_t*,8> *buffers)
             {
                 for (int j = 0; j < windowsize; j++)
                 {
-                    ya.at(i).at(j) *= H[i][j];
+                    ya.at(i).at(j) *= H.at(i).at(j);
                 }
             }
 
-            // FIXME: inverse fft 
             for (int i = 0; i < num_mics; i++)
             {
                 ifft(ya.at(i));
