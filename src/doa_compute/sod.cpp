@@ -50,7 +50,7 @@ SOD::SOD(int samplerate, uint16_t BUFFER_SIZE, int angles_x)
     current_sum = 0.0;
 }
 
-std::array<double,2> SOD::compute(std::array<int16_t*,8> *buffers)
+std::array<double,3> SOD::compute(std::array<int16_t*,8> *buffers)
 {
     std::complex<double> imaginary(0.0,1.0);
     // reset steering block
@@ -175,7 +175,7 @@ std::array<double,2> SOD::compute(std::array<int16_t*,8> *buffers)
             }
         }
     }
-    return std::array<double,2> {current_max_angl, current_max_dbs};
+    return std::array<double,3> {current_max_angl, 0, current_max_dbs};
 
 }
 

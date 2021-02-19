@@ -4,6 +4,7 @@ add_executable(${PROJECT_NAME}
     main.cpp
     wav_reader/reader.cpp
     doa_compute/sod.cpp
+    doa_compute/sod_3d.cpp
     output_writer/csv_writer.cpp
 )
 

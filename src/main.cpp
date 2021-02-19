@@ -13,6 +13,7 @@
 
 #include "wav_reader/reader.h"
 #include "doa_compute/sod.h"
+#include "doa_compute/sod_3d.h"
 #include "output_writer/csv_writer.h"
 
 int main(int argc, char *argv[]){
@@ -58,20 +59,13 @@ int main(int argc, char *argv[]){
 
     uint32_t samplerate = readers[0].getSamplerate();
 
-    bool next_buffers_full = true;
-    for (int n = 0; n < num_mics; n++)
-    {
-        if(!readers[n].getNextBuffer(&buffers[n]))
-        {
-            next_buffers_full = false;
-        }
-    }
 
     // new object of Direction finder
     SOD sod (samplerate, BUFFER_SIZE, angles_x);
+    //SOD_3D sod (samplerate, BUFFER_SIZE, angles_x);
     
 
-    //new object of filter 8th order between 600 adn 6000 Hz
+    //new object of filter 8th order between 600 and 6000 Hz
     const double broadband_filter_coeff[][6] = {
         {0.05445625, 0.10743313, 0.05445625,  1.0, -0.0950718, 0.4306414},
         {1.0, -1.99776801, 1.0, 1.0, -1.35646634, 0.63553658},
@@ -90,9 +84,18 @@ int main(int argc, char *argv[]){
 
     auto startTime = std::chrono::high_resolution_clock::now();
 
-    std::array<double,2> resultbuffer;
-    std::vector<double> results_angl;
+    std::array<double,3> resultbuffer;
+    std::vector<std::array<double,2>> results_angl;
     std::vector<double> results_dbs;
+
+    bool next_buffers_full = true;
+    for (int n = 0; n < num_mics; n++)
+    {
+        if(!readers[n].getNextBuffer(&buffers[n]))
+        {
+            next_buffers_full = false;
+        }
+    }
 
     while(next_buffers_full)
     {
@@ -104,14 +107,10 @@ int main(int argc, char *argv[]){
             }
         }
 
-
-
         resultbuffer = sod.compute(&buffers);
+        results_angl.push_back(std::array<double,2> {resultbuffer[0], resultbuffer[1]});
+        results_dbs.push_back(resultbuffer[2]);
 
-        results_angl.push_back(resultbuffer[0]);
-        results_dbs.push_back(resultbuffer[1]);
-
-        counter++;
         if(counter % 10 == 0)
         {
             // print something every tenth block to estimate runtime
@@ -126,13 +125,16 @@ int main(int argc, char *argv[]){
                 next_buffers_full = false;
             }
         }
+        counter++;
     }
 
+    // stop timer
     auto endTime = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> timing;
     timing = endTime - startTime;
     std::cout << "Time needed for computation: " <<  timing.count() << " seconds"<< std::endl;
 
+    // output two files for angle and dbs
     write_csv("", results_angl, results_dbs);
 
 

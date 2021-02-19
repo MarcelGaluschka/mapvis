@@ -13,7 +13,7 @@ class SOD
 {
     public: 
         SOD(int samplerate, uint16_t BUFFER_SIZE, int angles_x);
-        std::array<double,2> compute(std::array<int16_t*,8> *buffers);
+        std::array<double,3> compute(std::array<int16_t*,8> *buffers);
 
     private:
         double hamming(double windowsize, int pos);
@@ -49,7 +49,6 @@ class SOD
         std::vector<double> inc_matrix;
         std::vector<double> inc_matrix2;
 
-        //std::array<std::array<std::complex<double>,512>,8> H;
         std::vector<std::vector<std::complex<double>>> H;
         std::vector<double> Th;
 
