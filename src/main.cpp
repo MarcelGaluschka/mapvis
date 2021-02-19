@@ -61,8 +61,8 @@ int main(int argc, char *argv[]){
 
 
     // new object of Direction finder
-    SOD sod (samplerate, BUFFER_SIZE, angles_x);
-    //SOD_3D sod (samplerate, BUFFER_SIZE, angles_x);
+    //SOD sod (samplerate, BUFFER_SIZE, angles_x);
+    SOD_3D sod (samplerate, BUFFER_SIZE, angles_x, 5);
     
 
     //new object of filter 8th order between 600 and 6000 Hz
