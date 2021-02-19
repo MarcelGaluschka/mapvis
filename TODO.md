@@ -8,7 +8,7 @@
 
 
 ## Preprocessing
-* abstract doa estimator
+* abstract doa estimator -> DONE
 * filter block  -> DONE
 * 3d SOD        -> DONE
 * MUSIC
