@@ -12,6 +12,7 @@
 #include "Iir.h"
 
 #include "wav_reader/reader.h"
+#include "doa_compute/doa_estimator.h"
 #include "doa_compute/sod.h"
 #include "doa_compute/sod_3d.h"
 #include "output_writer/csv_writer.h"
@@ -30,6 +31,7 @@ int main(int argc, char *argv[]){
     //const uint16_t BUFFER_SIZE = (uint16_t) 2048;
 
     const int angles_x = 16;
+    const int angles_y = 2;
 
     char* filePath = argv[2];
     string filePathString = filePath;
@@ -61,8 +63,8 @@ int main(int argc, char *argv[]){
 
 
     // new object of Direction finder
-    //SOD sod (samplerate, BUFFER_SIZE, angles_x);
-    SOD_3D sod (samplerate, BUFFER_SIZE, angles_x, 5);
+    SOD sod (samplerate, BUFFER_SIZE, angles_x);
+    //SOD_3D sod (samplerate, BUFFER_SIZE, angles_x, angles_y);
     
 
     //new object of filter 8th order between 600 and 6000 Hz

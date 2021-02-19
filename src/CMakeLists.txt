@@ -3,6 +3,7 @@
 add_executable(${PROJECT_NAME}
     main.cpp
     wav_reader/reader.cpp
+    doa_compute/doa_estimator.cpp
     doa_compute/sod.cpp
     doa_compute/sod_3d.cpp
     output_writer/csv_writer.cpp
@@ -19,7 +20,8 @@ find_package(iir)
 target_link_libraries(${PROJECT_NAME} iir::iir_static)
 # Add additonial compile options to enable more warnings
 add_compile_options(-Wall -Wextra -O3)
-add_compile_options(-lsndfile -liir)
+add_compile_options(-liir)
+#add_compile_options(-lsndfile -liir)
 
 #add_compile_options(-lvtk -L/software/vtk/lib -I/software/vtk/include)
 # Set the version of the C++ standard to use, we use C++14, published in 2014

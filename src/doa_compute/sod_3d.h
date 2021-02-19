@@ -6,20 +6,19 @@
 #include <math.h>
 #include <algorithm>
 
+#include "doa_estimator.h"
+
 /*
-* Sum of delay algorithms in tbe 2D - case
+* Sum of delay algorithms in tbe 3D - case
 */ 
-class SOD_3D
+class SOD_3D :
+    public DOA_EST
 {
     public: 
         SOD_3D(int samplerate, uint16_t BUFFER_SIZE, int angles_x, int angles_y);
-        std::array<double,3> compute(std::array<int16_t*,8> *buffers);
+        virtual std::array<double,3> compute(std::array<int16_t*,8> *buffers) override;
 
     private:
-        double hamming(double windowsize, int pos);
-
-        void fft(std::vector<std::complex<double>> &x);
-        void ifft(std::vector<std::complex<double>> &x);
 
         std::vector<std::complex<double>> mics;
         int num_mics = 8;
