@@ -7,7 +7,6 @@
 
 #include <boost/lexical_cast.hpp>
 
-#include <sndfile.h>
 
 #include "Iir.h"
 
@@ -15,6 +14,7 @@
 #include "doa_compute/doa_estimator.h"
 #include "doa_compute/sod.h"
 #include "doa_compute/sod_3d.h"
+//#include "doa_compute/music_3d.h"
 #include "output_writer/csv_writer.h"
 
 int main(int argc, char *argv[]){
@@ -63,8 +63,9 @@ int main(int argc, char *argv[]){
 
 
     // new object of Direction finder
-    SOD sod (samplerate, BUFFER_SIZE, angles_x);
+    //SOD sod (samplerate, BUFFER_SIZE, angles_x);
     //SOD_3D sod (samplerate, BUFFER_SIZE, angles_x, angles_y);
+    SOD_3D sod (samplerate, BUFFER_SIZE, angles_x, angles_y);
     
 
     //new object of filter 8th order between 600 and 6000 Hz
@@ -81,6 +82,17 @@ int main(int argc, char *argv[]){
     const int nSOS = sizeof(broadband_filter_coeff) / sizeof(broadband_filter_coeff[0]);
     Iir::Custom::SOSCascade<nSOS> broadband_filter (broadband_filter_coeff);
     
+    //std::complex<double> imaginary (0.0,1.0);
+    //double band_width = 1500;
+    //double center_frequency = 1250;
+    //double thc = (center_frequency * 2 * M_PI) / samplerate;
+    //double rho = exp((-band_width * M_PI)/ samplerate);
+    //std::complex<double> pl = rho * exp(imaginary * thc);
+    //const double narrowband_filter_coeff[][6] = {
+    //       {1.0, 0, 0,  1.0, (- 1) *real(pl), 0}
+    //   };
+
+    //Iir::Custom::SOSCascade<1> narrowband_filter (narrowband_filter_coeff);
 
     int counter = 0;
 
@@ -98,7 +110,6 @@ int main(int argc, char *argv[]){
             next_buffers_full = false;
         }
     }
-
     while(next_buffers_full)
     {
         for (int mic = 0; mic < num_mics; mic++)

@@ -6,6 +6,7 @@ add_executable(${PROJECT_NAME}
     doa_compute/doa_estimator.cpp
     doa_compute/sod.cpp
     doa_compute/sod_3d.cpp
+    #doa_compute/music_3d.cpp
     output_writer/csv_writer.cpp
 )
 

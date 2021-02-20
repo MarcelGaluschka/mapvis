@@ -12,3 +12,5 @@
 * filter block  -> DONE
 * 3d SOD        -> DONE
 * MUSIC
+* general filter 600Hz -> 6000Hz 
+* filter around 
