@@ -11,6 +11,6 @@
 * abstract doa estimator -> DONE
 * filter block  -> DONE
 * 3d SOD        -> DONE
-* MUSIC
+* MUSIC         -> DO NOT FOLLOW AT FIRST
 * general filter 600Hz -> 6000Hz 
-* filter around 
+* output writer 
