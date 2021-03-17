@@ -3,4 +3,4 @@
 #include <vector>
 #include <array>
 
-void write_csv(std::string filename, std::vector<std::array<double,2>> angls, std::vector<double> dbs);
+void write_csv(std::string filename, std::vector<std::array<double,2>> angls, std::vector<double> dbs, int samplerate, int blocksize);

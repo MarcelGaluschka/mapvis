@@ -148,7 +148,7 @@ int main(int argc, char *argv[]){
     std::cout << "Time needed for computation: " <<  timing.count() << " seconds"<< std::endl;
 
     // output two files for angle and dbs
-    write_csv("", results_angl, results_dbs);
+    write_csv("", results_angl, results_dbs, (int) samplerate, (int) BUFFER_SIZE);
 
 
     return 0.0;

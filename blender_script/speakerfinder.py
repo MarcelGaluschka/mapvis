@@ -14,22 +14,32 @@ from bpy_extras.io_utils import BoolProperty
 from bpy_extras.io_utils import ImportHelper
 from bpy.types import Operator 
 
+bl_info = {
+    "name": "Speaker Finder",
+    "blender": (2, 80, 0),
+    "category": "Object",
+}
+
 
 class SpeakerFinder(bpy.types.Operator, ImportHelper):
     bl_idname  = "object.speaker_finder"
-    bl_label = "open directory"
+    bl_label = "Find Speakers"
     #bl_idname = "test.open_filebrowser" 
     #bl_label = "Open the file browser (yay)" 
     filter_glob: StringProperty(
         default='*.csv;', 
-        options={'HIDDEN'}
         ) 
+    filepath = bpy.props.StringProperty(subtype="FILE_PATH")
     some_boolean: BoolProperty(
-        name='Do a thing', 
+        name='Do a nex thing', 
         description='Do a thing with the file you\'ve selected',
         default=True) 
     
     def execute(self, context):
+        
+        print(self.filepath)
+        
+        
         
         def distance(location1, location2):
             sum = 0
@@ -62,7 +72,7 @@ class SpeakerFinder(bpy.types.Operator, ImportHelper):
             bpy.data.objects.remove(obj)
                
         ths = []          
-        with open ("/home/marcel/git/mapvis/build/output_mapvis.csv", mode = "r") as file:
+        with open (self.filepath, mode = "r") as file:
             csvFile = csv.reader(file, delimiter=",")
             line_count = 0
             tmp_row = []
@@ -150,8 +160,7 @@ class SpeakerFinder(bpy.types.Operator, ImportHelper):
                     allspeakers[j].keyframe_insert(data_path='location',frame=(int((i-1) * block_to_frame)))
            
             last_angl_x = curr_angl_x
-            last_angl_y = curr_angl_y
-                    
+            last_angl_y = curr_angl_y     
         return {"FINISHED"}
 
 
@@ -162,8 +171,10 @@ def unregister():
     bpy.utils.unregister_class(SpeakerFinder) 
 
 if __name__ == "__main__": 
+    #unregister()
     register() 
     
 # test call 
 #    bpy.ops.object.speaker_finder()
     
+register()
