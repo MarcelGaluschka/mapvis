@@ -6,8 +6,16 @@ add_executable(${PROJECT_NAME}
     doa_compute/doa_estimator.cpp
     doa_compute/sod.cpp
     doa_compute/sod_3d.cpp
-    #doa_compute/music_3d.cpp
     output_writer/csv_writer.cpp
+    
+    iir1/iir/Biquad.cpp
+    iir1/iir/Butterworth.cpp
+    iir1/iir/Cascade.cpp
+    iir1/iir/ChebyshevI.cpp
+    iir1/iir/ChebyshevII.cpp
+    iir1/iir/Custom.cpp
+    iir1/iir/PoleFilter.cpp
+    iir1/iir/RBJ.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR})
@@ -17,11 +25,11 @@ install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${PROJECT_SOURCE_DIR}/build/
 
 #find_package(iir)
 #target_link_libraries(... iir::iir)
-find_package(iir)
-target_link_libraries(${PROJECT_NAME} iir::iir_static)
+#find_package(iir)
+#target_link_libraries(${PROJECT_NAME} iir::iir_static)
 # Add additonial compile options to enable more warnings
 add_compile_options(-Wall -Wextra -O3)
-add_compile_options(-liir)
+#add_compile_options(-liir)
 #add_compile_options(-lsndfile -liir)
 
 #add_compile_options(-lvtk -L/software/vtk/lib -I/software/vtk/include)
