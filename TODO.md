@@ -1,8 +1,6 @@
-# TODO
-
 ## Visualisierung
 * Tracking multiple objects -> DONE
-* file explorer
+* file explorer -> DONE
 * make sphere -> DONE
 * 3D - case -> DONE
 
@@ -12,5 +10,6 @@
 * filter block  -> DONE
 * 3d SOD        -> DONE
 * MUSIC         -> DO NOT FOLLOW AT FIRST
-* general filter 600Hz -> 6000Hz 
-* output writer 
+* general filter 600Hz -> 6000Hz  -> NO
+* output writer  -> DONE
+* single outputfle -> DONE

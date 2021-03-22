@@ -87,7 +87,6 @@ std::array<double,3> SOD::compute(std::array<int16_t*,8> *buffers)
                 H.at(i).at(j) = exp(- imaginary * Th.at(j) * inc_matrix2.at(i));
             }
         }
-        // TODO: fft shift on h is this correct???
         for (int i = 0; i < num_mics; i++)
         {
             std::rotate(H.at(i).begin(), (H.at(i).begin() + ((int)windowsize >> 1)), H.at(i).end());

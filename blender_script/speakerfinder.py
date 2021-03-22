@@ -96,7 +96,6 @@ class SpeakerFinder(bpy.types.Operator, ImportHelper):
         scn.frame_start = 1
         scn.frame_end = int(math.ceil(1 * len(ths) * block_to_frame))
         
-        ## TODO make new object beeing a sphere
         allspeakers = []
         speakerlocations = []
 

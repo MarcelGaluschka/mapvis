@@ -26,12 +26,11 @@ int main(int argc, char *argv[]){
         return 0.0;
     }
 
-    // TODO variable Blocksize
     const uint16_t BUFFER_SIZE = (uint16_t) atoi(argv[1]);
     //const uint16_t BUFFER_SIZE = (uint16_t) 2048;
 
     const int angles_x = 16;
-    const int angles_y = 2;
+    const int angles_y = 3;
 
     char* filePath = argv[2];
     string filePathString = filePath;
