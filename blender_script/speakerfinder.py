@@ -24,8 +24,6 @@ bl_info = {
 class SpeakerFinder(bpy.types.Operator, ImportHelper):
     bl_idname  = "object.speaker_finder"
     bl_label = "Find Speakers"
-    #bl_idname = "test.open_filebrowser" 
-    #bl_label = "Open the file browser (yay)" 
     filter_glob: StringProperty(
         default='*.csv;', 
         ) 
@@ -99,6 +97,7 @@ class SpeakerFinder(bpy.types.Operator, ImportHelper):
         allspeakers = []
         speakerlocations = []
 
+        ## generate new sphere for each speaker
         for i in range (number_speakers):
             mesh = bpy.data.meshes.new('Basic_Sphere')
             basic_sphere = bpy.data.objects.new("speaker_" + str(i), mesh)
@@ -125,6 +124,7 @@ class SpeakerFinder(bpy.types.Operator, ImportHelper):
         last_angl_y =  (math.pi/180) * ths[0][1]
         last_dbs = ths[0][2]
         
+        ## iterate over all blocks
         for i in range(int(len(ths))):
             
             temps_ths = ths[i]
@@ -153,6 +153,7 @@ class SpeakerFinder(bpy.types.Operator, ImportHelper):
                 tempObject.location = speakerlocations[curr_speaker]
                 tempObject.keyframe_insert(data_path='location',frame=(int((i-1) * block_to_frame)))
   
+            ## make new keayframe for each speaker in each block
             for j in range(len(allspeakers)):
                 if (j != curr_speaker):
                     allspeakers[j].location = speakerlocations[j]
@@ -170,10 +171,7 @@ def unregister():
     bpy.utils.unregister_class(SpeakerFinder) 
 
 if __name__ == "__main__": 
-    #unregister()
     register() 
     
-# test call 
-#    bpy.ops.object.speaker_finder()
     
 register()
