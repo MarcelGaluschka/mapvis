@@ -16,6 +16,8 @@ class SOD :
 {
     public: 
         SOD(int samplerate, uint16_t BUFFER_SIZE, int angles_x);
+
+        // compute direction and energy for each block
         virtual std::array<double,3> compute(std::array<int16_t*,8> *buffers) override;
 
     private:

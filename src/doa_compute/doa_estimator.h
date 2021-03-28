@@ -20,7 +20,9 @@ class DOA_EST
 
         double hamming(double windowsize, int pos);
 
+        // simple fft calcualtion on vector of complex values (call by ref)
         void fft(std::vector<std::complex<double>> &x);
+        // simple inverse fft calcualtion on vector of complex values (call by ref)
         void ifft(std::vector<std::complex<double>> &x);
 
 };
